@@ -1,1 +1,13 @@
-export const add = (...n: number[]) => n.reduce((acc, v) => acc + v, 0);
+
+
+
+
+const coercedNumber = () => coerce(
+	union(string(), number()),
+	number(),
+	(input) => +input 
+);
+
+const user = object({
+	age: coercedNumber()
+});
