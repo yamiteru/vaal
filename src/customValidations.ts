@@ -1,33 +1,37 @@
 import { condition } from "./core";
 import { Validation } from "./types";
 
-export const typeValidation = (desiredType: string): Validation<string> => (value) => {
-	const currentType = typeof value;
+export const typeValidation = <T>(desiredType: string): Validation<T> => 
+	(value: unknown) => {
+		const currentType = typeof value;
 
-	condition(
-		currentType === desiredType, 
-		{ reason: "type", desiredType, currentType }
-	);
+		condition(
+			currentType === desiredType, 
+			{ reason: "type", desiredType, currentType }
+		);
 
-	return value;
-};
+		return value as T;
+	};
 
-export const arrayValidation = <T>(): Validation<T[]> => (value) => {
-	condition(
-		Array.isArray(value), 
-		{ reason: "type", desiredType: "array", currentType: typeof value }
-	);
+export const arrayValidation = <T extends unknown[]>(): Validation<T> => 
+	(value: unknown) => {
+		condition(
+			Array.isArray(value), 
+			{ reason: "type", desiredType: "array", currentType: typeof value }
+		);
 
-	return value;
-};
+		return value as T;
+	};
 
-export const lengthValidation = (desiredLength: number): Validation<number> => (value) => {
-		const currentLength = value.length;
+export const lengthValidation = <T>(desiredLength: number): Validation<T> => 
+	(value: unknown) => {
+		const currentLength = (value as unknown[]).length;
 
 		condition(
 			currentLength === desiredLength, 
 			{ reason: "length", desiredLength, currentLength }
 		);
 
-		return value;
+		return value as T;
 	};
+

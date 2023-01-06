@@ -1,13 +1,5 @@
+export * from "./core";
+export * from "./customTypes";
+export * from "./customValidations";
+export * from "./types";
 
-
-
-
-const coercedNumber = () => coerce(
-	union(string(), number()),
-	number(),
-	(input) => +input 
-);
-
-const user = object({
-	age: coercedNumber()
-});

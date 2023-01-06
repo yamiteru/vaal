@@ -1,4 +1,4 @@
-import { Validation } from "./types";
+import { Error, Validation } from "./types";
 
 export function type<T>(
 	...validations: Validation<T>[]
@@ -10,12 +10,12 @@ export function type<T>(
 			let latestValue = v;
 
 			for(let i = 0; i < length; ++i) {
-				latestValue = (validations as any)[i](latestValue);	
+				latestValue = validations[i](latestValue);	
 			}
 
-			return latestValue;
+			return latestValue as T;
 		} catch(e) {
-			throw { value: v, ...(e as any) };
+			throw { value: v, ...(e as Record<string, unknown>) };
 		}
 	};
 }
@@ -29,14 +29,14 @@ export function condition(statement: unknown, error: {
 }
 
 export function assert<T>(
-	value: any, 
+	value: unknown, 
 	validation: Validation<T>
 ): asserts value is T {
 	validation(value);
 }
 
 export function is<T>(
-	value: any, 
+	value: unknown, 
 	validation: Validation<T>
 ): value is T {
 	try {
@@ -48,13 +48,13 @@ export function is<T>(
 }
 
 export function parse<T>(
-	value: any, 
+	value: unknown, 
 	validation: Validation<T>
-): [T, null] | [null, { value: unknown, reason: string, [key: string]: unknown }] {
+): [T, null] | [null, Error] {
 	try {
 		return [validation(value), null];
 	} catch (e) {
-		return [null, e as any];
+		return [null, e as Error];
 	}
 }
 

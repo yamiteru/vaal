@@ -1,3 +1,7 @@
+import { condition, type } from "./core";
+import { typeValidation, arrayValidation, lengthValidation } from "./customValidations";
+import { Validation, Infer, ValidationObject, ValidationArray, InferValidationArray, InferValidationObject } from "./types";
+
 export const coerce = <
 	I extends Validation, 
 	O extends Validation
@@ -6,10 +10,10 @@ export const coerce = <
 	output: O,
 	fn: (input: Infer<I>) => Infer<O>
 ) => type<Infer<O>>(
-	(v) => {
+	(v: unknown) => {
 		input(v);
 
-		const coerced = fn(v);
+		const coerced = fn(v as Infer<I>);
 
 		output(coerced);
 
@@ -38,39 +42,45 @@ export const symbol = () => type<symbol>(
 );
 
 export const instance = <T>(desiredType: T) =>  type<T>(
-	(v) => {
+	(value: unknown) => {
 		condition(
-			v instanceof (desiredType as any), 
-			{ reason: "type", currentType: typeof v, desiredType }
+			value instanceof (desiredType as any), 
+			{ reason: "type", currentType: typeof value, desiredType }
 		);
+
+		return value as T;
 	}
 );
 
 export const date = () => type<Date>(
-	instance(Date)
+	instance<Date>(Date as any)
 );
 
-export const any = () => type<any>();
+export const unknown = () => type<unknown>();
 
 export const literal = <T>(desiredValue: T) => {
 	const desiredType = typeof desiredValue;
 
 	return type<T>(
 		typeValidation(desiredType),
-		(currentValue) => {
+		(currentValue: unknown) => {
 			condition(
 				desiredValue === currentValue, 
 				{ reason: "literal", currentValue, desiredValue }
 			);
+
+			return currentValue as T;
 		}
 	);
 }
 
 export const optional = <T extends Validation>(schema: T) => type<undefined | Infer<T>>(
-	(v) => {
-		if(v !== undefined) {
-			schema(v);
+	(value: unknown) => {
+		if(value !== undefined) {
+			return schema(value) as Infer<T>;
 		}
+
+		return value as undefined;
 	}	
 );
 
@@ -78,34 +88,45 @@ export const object = <
 	T extends ValidationObject 
 >(schema: T) => type<InferValidationObject<T>>(
 	typeValidation("object"),
-	(v) => {
+	(value: unknown) => {
+		const result: InferValidationObject<T> = {} as never;
+
 		for(const key in schema) {
-			(schema as any)[key](v[key]);
+			result[key] = schema[key]((value as Record<string, unknown>)[key]) as any;
 		}
+
+		return result;
 	}
 );
 
 export const record = <
-	K extends Validation, 
+	K extends Validation<string | number | symbol>, 
 	V extends Validation
 >(key: K, value: V) => type<Record<Infer<K>, Infer<V>>>(
 	typeValidation("object"),
-	(v) => {
-		for(const k in v) {
+	(currentValue: unknown) => {
+		const result: Record<Infer<K>, Infer<V>> = {} as never;
+
+		for(const k in (currentValue as Record<string, unknown>)) {
 			key(k);	
-			value(v[k]);
+			value((currentValue as Record<string, unknown>)[k]);
 		}
+
+		return result;
 	}
 );
 
 export const array = <T extends Validation>(schema: T) => type<Infer<T>[]>(
 	arrayValidation(),
-	(v) => {
-		const length = v.length;
+	(value: unknown) => {
+		const length = (value as unknown[]).length;
+		const result: Infer<T>[] = [];
 
 		for(let i = 0; i < length; ++i) {
-			schema(v[i]);
+			result.push(schema((value as unknown[])[i]) as Infer<T>);
 		}
+
+		return result;
 	}
 );
 
@@ -115,45 +136,26 @@ export const tuple = <T extends ValidationArray>(...schema: T) => {
 	return type<InferValidationArray<T>>(
 		arrayValidation(),
 		lengthValidation(length),
-		(v) => {
+		(value: unknown) => {
+			const result: InferValidationArray<T> = [] as never;
+
 			for(let i = 0; i < length; ++i) {
-				(schema as any)[i](v[i]);
+				result.push(schema[i]((value as unknown[])[i]));
 			}	
+
+			return result;
 		}
 	);
 }
 
-
-
-export const union = <T extends ValidationArray>(...schema: T) => {
-	const length = schema.length;
-
-	return type<InferValidationArray<T>[number]>(
-		(v) => {
-			let valid = false;
-
-			for(let i = 0; i < length; ++i) {
-				if(is(v[i], schema[i])) {
-					valid = true;
-					break;
-				}
-			}
-
-			condition(valid, { reason: "union" });
-		}
-	);
-}
-
-export const nullable = <T extends Validation>(schema: T) => type<null | Infer<T>>(
-	union(literal(null), schema)
-);
-
-export const enums = <T extends any[]>(...values: T) => type<T[number]>(
-	(v) => {
+export const enums = <T extends unknown[]>(...values: T) => type<T[number]>(
+	(value: unknown) => {
 		condition(
-			v in values,
-			{ reason: "mismatch", value: v }
+			values.indexOf(value) > -1,
+			{ reason: "mismatch", value }
 		);
+
+		return value as T[number];
 	}
 );
 
