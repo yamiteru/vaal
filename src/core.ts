@@ -58,4 +58,9 @@ export function parse<T>(
 	}
 }
 
-
+export function extend<T>(validation: Validation<T>, ...validations: Validation<T>[]) {
+	return type<T>(
+		validation,
+		...validations
+	);
+}
