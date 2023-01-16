@@ -109,7 +109,7 @@ export const record = <
 
 		for(const k in (currentValue as Record<string, unknown>)) {
 			key(k);	
-			value((currentValue as Record<string, unknown>)[k]);
+			result[k] = value((currentValue as Record<string, unknown>)[k]);
 		}
 
 		return result;
