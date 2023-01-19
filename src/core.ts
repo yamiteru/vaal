@@ -1,4 +1,4 @@
-import { Error, Validation } from "./types";
+import { Error, Primitive, Validation } from "./types";
 
 export function type<T>(
 	...validations: Validation<T>[]
@@ -6,26 +6,18 @@ export function type<T>(
 	const length = validations.length;
 
 	return function(v) {
-		try {
-			let latestValue = v;
+		let latestValue = v;
 
-			for(let i = 0; i < length; ++i) {
-				latestValue = validations[i](latestValue);	
+		for(let i = 0; i < length; ++i) {
+			const nextValue = validations[i](latestValue);
+
+			if(nextValue !== undefined) {
+				latestValue = nextValue;
 			}
-
-			return latestValue as T;
-		} catch(e) {
-			throw { value: v, ...(e as Record<string, unknown>) };
 		}
-	};
-}
 
-export function condition(statement: unknown, error: {
-	reason: string, [key: string]: unknown
-}): asserts statement is false {
-	if(!statement) {
-		throw error;
-	}
+		return latestValue as T;
+	};
 }
 
 export function assert<T>(
@@ -52,15 +44,73 @@ export function parse<T>(
 	validation: Validation<T>
 ): [T, null] | [null, Error] {
 	try {
-		return [validation(value), null];
+		return [validation(value) || value as T, null];
 	} catch (e) {
 		return [null, e as Error];
 	}
 }
 
-export function extend<T>(validation: Validation<T>, ...validations: Validation<T>[]) {
-	return type<T>(
-		validation,
-		...validations
-	);
-}
+export type Reason<
+	T extends Record<string, unknown> = Record<string, unknown>
+> = T & { value: unknown };
+
+export type Reasons = {
+	EQ: Reason;
+
+	NEQ: Reason;
+
+	GT: Reason;
+
+	GTE: Reason;
+
+	LT: Reason;
+
+	LTE: Reason;
+
+	NEVER: Reason;
+
+	UNION: Reason;
+
+	LITERAL: Reason<{
+		options: Primitive[];
+	}>;
+	
+	TYPE: Reason<{
+		currentType: string;
+		desiredType: string;
+	}>;
+
+	INSTANCE: Reason<{
+		desiredInstance: unknown;
+	}>;
+
+	STRING_MIN_LENGTH: Reason<{ 
+		currentLength: number; 
+		desiredLength: number; 
+	}>; 
+
+	STRING_MAX_LENGTH: Reason<{ 
+		currentLength: number;
+		desiredLength: number; 
+	}>;
+
+	STRING_INCLUDES: Reason<{
+		searchString: string;
+	}>;
+
+	ARRAY_LENGTH: Reason<{
+		currentLength: number;
+		desiredLength: number;
+	}>;
+};
+
+export const condition = <Reason extends keyof Reasons>(
+	expression: boolean,
+	reason: Reason, 
+	context: Reasons[Reason] 
+) => {
+		if(expression) {
+			throw { reason, context };
+		}
+};
+

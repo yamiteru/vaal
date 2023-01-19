@@ -1,18 +1,18 @@
-# TS Package 
+# Vaal 
 
-Template for creating publishable TypeScript package. It uses SWC for compilation.
+Composable data validation library with TypeScript type inference.
 
 ## TODO
 
 - [x] Extend
-- [ ] Nullable
-- [ ] Union
-- [ ] Map
-- [ ] Set
+- [x] Nullable
+- [x] Union
+- [x] Map
+- [x] Set
 - [ ] Intersection/merge
 - [ ] Recursive
 - [ ] Function
-- [ ] Better error messages
-- [ ] Rename coerce to transform
-- [ ] Cast (ie. string -> number)
+- [x] Better error messages
+- [x] Rename coerce to transform
+- [x] Cast (ie. string -> number)
 - [ ] Brands

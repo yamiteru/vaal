@@ -1,4 +1,10 @@
-export type Validation<T = unknown> = (value: unknown) => T;
+export type Either<Left, Right> = Left | Right;
+
+export type Nullable<Type> = Either<null, Type>;
+
+export type Maybe<Type> = Either<Nullable<undefined>, Type>;
+
+export type Validation<T = unknown> = (value: unknown) => T | void;
 
 export type ValidationObject = Record<string, Validation>;
 
@@ -24,3 +30,4 @@ export type Infer<
 	? X
 	: never;
 
+export type Primitive = string | number | bigint | boolean | null | undefined;
