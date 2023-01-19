@@ -1,12 +1,9 @@
-import { condition } from "../core";
+import { predicate, validation } from "../core";
 
 export const length = (desiredLength: number) => {
-	return (value: unknown) => {
-		const currentLength = (value as unknown[]).length;
-
-		condition(
-			currentLength !== desiredLength,
-			"ARRAY_LENGTH", { value, currentLength, desiredLength }
-		);
-	};
+	return validation(
+		"ARRAY_LENGTH",
+		predicate((v) => (v as unknown[]).length !== desiredLength),
+		(v) => ({ currentLength: (v as unknown[]).length, desiredLength })
+	);
 };

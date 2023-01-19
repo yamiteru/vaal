@@ -1,6 +1,16 @@
 import { Error, Primitive, Validation } from "./types";
 
-export function type<T>(
+export const NONE = Symbol();
+
+export const predicate = <Type>(fn: (value: unknown) => boolean) => {
+	return (value: unknown) => {
+		return fn(value) 
+			? value as Type
+			: NONE;
+	};
+};
+
+export function define<T>(
 	...validations: Validation<T>[]
 ): Validation<T> {
 	const length = validations.length;
@@ -55,9 +65,13 @@ export type Reason<
 > = T & { value: unknown };
 
 export type Reasons = {
-	EQ: Reason;
+	EQ: Reason<{
+		compareValue: unknown;
+	}>;
 
-	NEQ: Reason;
+	NEQ: Reason<{
+		compareValue: unknown;
+	}>;
 
 	GT: Reason;
 
@@ -84,6 +98,14 @@ export type Reasons = {
 		desiredInstance: unknown;
 	}>;
 
+	NUMBER_INT: Reason;
+
+	NUMBER_FLOAT: Reason;
+
+	NUMBER_POSITIVE: Reason;
+
+	NUMBER_NEGATIVE: Reason;
+
 	STRING_MIN_LENGTH: Reason<{ 
 		currentLength: number; 
 		desiredLength: number; 
@@ -102,15 +124,36 @@ export type Reasons = {
 		currentLength: number;
 		desiredLength: number;
 	}>;
+
+	[reason: string]: Reason<
+		Record<string, unknown>
+	>;
 };
 
-export const condition = <Reason extends keyof Reasons>(
-	expression: boolean,
-	reason: Reason, 
-	context: Reasons[Reason] 
-) => {
-		if(expression) {
-			throw { reason, context };
+export const validation = <
+	Type,
+	Reason extends keyof Reasons
+>(
+	reason: Reason,
+	predicate: (value: unknown) => Type | typeof NONE, 
+	// TODO: make optional only when we don't need to provide any additional context
+	context?: (value: unknown) => Omit<Reasons[Reason], "value">
+): Validation<Type> => {
+	return (value: unknown) => {
+		if(predicate(value) === NONE) {
+			throw { 
+				reason, 
+				context: { 
+					...(
+						context 
+							? context(value)
+							: {}
+					), 
+					value 
+				} as never 
+			};
 		}
-};
 
+		return value as Type;
+	}; 
+};

@@ -1,32 +1,25 @@
-import { condition } from "../core";
+import { predicate, validation } from "../core";
 
 export const min = (desiredLength: number) => {
-	return (value: unknown) => {
-		const currentLength = (value as string).length;
-		
-		condition(
-			currentLength < desiredLength, 
-			"STRING_MIN_LENGTH", { value, desiredLength, currentLength }
-		);
-	}
+	return validation(
+		"STRING_MIN_LENGTH",
+		predicate((v) => (v as string).length < desiredLength),
+		(v) => ({ currentLength: (v as string).length, desiredLength })
+	);
 };
 
 export const max = (desiredLength: number) => {
-	return (value: unknown) => {
-		const currentLength = (value as string).length;
-
-		condition(
-			(value as string).length > desiredLength,
-			"STRING_MAX_LENGTH", { value, desiredLength, currentLength }
-		);
-	}
+	return validation(
+		"STRING_MAX_LENGTH",
+		predicate((v) => (v as string).length > desiredLength),
+		(v) => ({ currentLength: (v as string).length, desiredLength })
+	);
 };
 
 export const includes = (searchString: string) => {
-	return (value: unknown) => {
-		condition(
-			!(value as string).includes(searchString), 
-			"STRING_INCLUDES", { value, searchString }
-		);
-	};
+	return validation(
+		"STRING_INCLUDES",
+		predicate((v) => !(v as string).includes(searchString)),
+		() => ({ searchString })
+	);
 };
