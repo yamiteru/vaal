@@ -11,7 +11,7 @@ Composable data validation library with TypeScript type inference.
 - [x] Set
 - [ ] Intersection/merge
 - [ ] Recursive
-- [ ] Function
+- [x] Function
 - [x] Better error messages
 - [x] Rename coerce to transform
 - [x] Cast (ie. string -> number)

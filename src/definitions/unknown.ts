@@ -1,3 +1,1 @@
-import { define } from "../core";
-
-export const unknown = define<unknown>();
+export const unknown = <Type>(value: unknown) => value as Type;

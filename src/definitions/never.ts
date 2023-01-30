@@ -1,5 +1,3 @@
-import { condition, type } from "../core";
+import { error, filter } from "pipem";
 
-export const never = type<never>(
-	(value) => condition(value === undefined, "NEVER", { value })
-);
+export const never = filter(() => false, error("NEVER"));

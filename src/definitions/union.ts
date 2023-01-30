@@ -1,23 +1,23 @@
-import { define, NONE, validation } from "../core";
 import { InferValidationArray, Validation } from "../types";
 
 export const union = <T extends Validation[]>(...validations: T) => {
 	const length = validations.length;
 
-	return define<InferValidationArray<T>[number]>(
-		validation(
-			"UNION",
-			(v) => {
-				for(let i = 0; i < length; ++i) {
-					try {
-						return validations[i](v) as InferValidationArray<T>[number];
-					} catch {
-						// skip the error
-					}	
+	return (value: unknown) => {
+		for(let i = 0; i < length; ++i) {
+			try {
+				const tmp = validations[i](value) as InferValidationArray<T>[number];
+
+				if(tmp === undefined) {
+					throw "I don't care about the error message";
 				}
 
-				return NONE;
-			}
-		)
-	)
+				return tmp;
+			} catch {
+				// skip the error
+			}	
+		}
+
+		return undefined;
+	}
 };

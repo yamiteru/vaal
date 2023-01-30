@@ -1,7 +1,5 @@
+import { or } from "pipem";
 import { Validation } from "../types";
-import { either } from "./either";
 import { none } from "./none";
 
-export const optional = <Type>(validation: Validation<Type>) => {
-	return either(none, validation);
-};
+export const optional = <Type extends Validation>(validation: Type) => or(none, validation);

@@ -1,27 +1,8 @@
-import { predicate, validation } from "../core";
+import { error, filter } from "pipem";
 
-export const type = <Type>(desiredType: string) => {
-	return validation<Type, "TYPE">(
-		"TYPE",
-		predicate((v) => desiredType === "array" 
-			? !Array.isArray(v)
-			: typeof v !== desiredType),
-		(v) => ({ currentType: typeof v, desiredType })
-	);
-};
-
-export const eq = (compareValue: unknown) => {
-	return validation(
-		"EQ", 
-		predicate((v) => v !== compareValue),
-		() => ({ compareValue })
-	);
-};
-
-export const neq = (compareValue: unknown) => {
-	return validation(
-		"NEQ", 
-		predicate((v) => v === compareValue),
-		() => ({ compareValue })
-	);
-};
+export const type = <Type>(desiredType: string) => filter<unknown, Type>(
+	(value) => desiredType === "array" 
+		? Array.isArray(value)
+		: typeof value === desiredType,
+	error("TYPE", { desiredType })
+);

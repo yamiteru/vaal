@@ -1,12 +1,8 @@
-import { define, validation } from "../core";
+import { error, filter } from "pipem";
 import { Primitive } from "../types";
 
-export const literal = <Options extends Primitive[]>(...options: Options) => {
-	return define<Options[number]>(
-		validation(
-			"LITERAL",
-			(v) => !options.includes(v as never),
-			() => ({ options })
-		)
+export const literal = <Type extends Primitive>(desiredValue: Type) => 
+	filter<unknown, Type>(
+		(value) => value === desiredValue,
+		error("LITERAL", { desiredValue })
 	);
-};

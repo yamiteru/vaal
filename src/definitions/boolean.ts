@@ -1,6 +1,3 @@
-import { type } from "../core";
-import { isType } from "../customValidations";
+import { type } from "../validations/shared";
 
-export const boolean = type<boolean>(
-	isType("boolean")
-);
+export const boolean = type<boolean>("boolean");

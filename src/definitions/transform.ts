@@ -1,21 +1,21 @@
-import { type } from "../core";
+import { define } from "../core";
 import { Infer, Validation } from "../types";
 
 export const transform = <
 	Input extends Validation,
 	Output extends Validation
 >(
-	input: Input,
-	output: Output,
+	inputSchema: Input,
+	outputSchema: Output,
 	fn: (input: Infer<Input>) => Infer<Output>
 ) => {
-	return type<Infer<Output>>(
+	return define<Infer<Output>>(
 		(v) => {
-			input(v);
+			inputSchema(v);
 
 			const transformed = fn(v as Infer<Input>);
 
-			output(transformed);
+			outputSchema(transformed);
 
 			return transformed;
 		}

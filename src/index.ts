@@ -1,16 +1,11 @@
-import { parse } from "./core";
-import { object, optional, string, toNumber } from "./validators";
+import { or } from "pipem";
+import { number, string } from "./definitions";
+import { maybe } from "./definitions/maybe";
 
-const user = object({
-	name: string,
-	age: toNumber,
-	token: optional(string)
-});
+const value = maybe(or(string, number));	
 
-const parsed = parse({
-	name: "Yami",
-	age: "25"
-}, user);
-
-console.log(parsed);
+console.log(value(1));
+console.log(value("one"));
+console.log(value(null));
+console.log(value([]));
 

@@ -1,26 +1,31 @@
-import { type } from "../core";
+import { define, validation } from "../core";
 import { Infer, Validation } from "../types";
+import { type } from "../validations/shared";
 
 export const record = <
 	Key extends Validation<string | number | symbol>,
 	Value extends Validation
 >(
-	key: Key,
-	value: Value
+	keySchema: Key,
+	valueSchema: Value
 ) => {
-	return type<Record<Infer<Key>, Infer<Value>>>(
-		(v) => {
-			const keys = Object.keys(v as never);	
-			const length = keys.length;
-			const res: Record<Infer<Key>, Infer<Value>> = {} as never;
+	return define<Record<Infer<Key>, Infer<Value>>>(
+		type("object"),
+		validation(
+			"RECORD",
+			(value) => {
+				const keys = Object.keys(value as never);	
+				const length = keys.length;
+				const res: Record<Infer<Key>, Infer<Value>> = {} as never;
 
-			for(let i = 0; i < length; ++i) {
-				const k = keys[i];
+				for(let i = 0; i < length; ++i) {
+					const k = keys[i];
 
-				res[key(k) || k] = value(v);	
+					res[keySchema(k) || k] = valueSchema(value);	
+				}
+
+				return res;
 			}
-
-			return res;
-		}
+		)
 	);
 };

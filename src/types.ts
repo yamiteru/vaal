@@ -1,10 +1,15 @@
+import { Pipeable } from "pipem";
+
 export type Either<Left, Right> = Left | Right;
 
 export type Nullable<Type> = Either<null, Type>;
 
 export type Maybe<Type> = Either<Nullable<undefined>, Type>;
 
-export type Validation<T = unknown> = (value: unknown) => T | void;
+export type Validation<
+	Input = unknown, 
+	Output = unknown
+> = Pipeable<Input, Output>;
 
 export type ValidationObject = Record<string, Validation>;
 

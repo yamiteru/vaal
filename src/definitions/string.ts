@@ -1,6 +1,3 @@
-import { type } from "../core";
-import { isType } from "../customValidations";
+import { type } from "../validations/shared";
 
-export const string = type<string>(
-	isType("string")
-);
+export const string = type<string>("string");
