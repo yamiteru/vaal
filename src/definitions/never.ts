@@ -1,3 +1,6 @@
-import { error, filter } from "pipem";
+import { condition, createError, customError } from "pipem";
 
-export const never = filter(() => false, error("NEVER"));
+export const never = customError(
+  condition(() => false),
+  createError("NEVER"),
+);

@@ -1,21 +1,21 @@
-import { define, validation } from "../core";
-import { Infer, Validation } from "../types";
+import { getOk, isErr, ok } from "elfs";
+import { pipe, Pipeable } from "pipem";
+import { Infer } from "../types";
 import { instance } from "./instance";
 
-export const set = <Schema extends Validation>(schema: Schema) => {
-	return define<Set<Infer<Schema>>>(
-		instance<Set<Infer<Schema>>>(Set as never),
-		validation(
-			"SET",
-			(value) => {
-				const res: Set<Infer<Schema>> = new Set();
+export const set = <$Schema extends Pipeable>(schema: $Schema) =>
+  pipe(instance<Set<Infer<$Schema>>>(Set), (v) => {
+    const res: Set<Infer<$Schema>> = new Set();
 
-				for(const v of (value as Set<Infer<Schema>>).values()) {
-					res.add((schema(v) || v) as Infer<Schema>);
-				}
+    for (const _v of v.values()) {
+      const value = schema(_v);
 
-				return res;
-			}
-		)
-	);
-};
+      if (isErr(value)) {
+        return value;
+      }
+
+      res.add(getOk(value));
+    }
+
+    return ok(res);
+  });

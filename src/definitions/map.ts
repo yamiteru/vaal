@@ -1,30 +1,30 @@
-import { define, validation } from "../core";
-import { Infer, Validation } from "../types";
+import { getOk, isErr, ok } from "elfs";
+import { pipe, Pipeable } from "pipem";
+import { Infer } from "../types";
 import { instance } from "./instance";
 
-export const map = <
-	Key extends Validation,
-	Value extends Validation
->(
-	keySchema: Key,
-	valueSchema: Value
-) => {
-	return define<Map<Infer<Key>, Infer<Value>>>(
-		instance<Map<Infer<Key>, Infer<Value>>>(Map as never),
-		validation(
-			"MAP",	
-			(value) => {
-				const res: Map<Infer<Key>, Infer<Value>> = new Map();
+export const map = <$Key extends Pipeable, $Value extends Pipeable>(
+  keySchema: $Key,
+  valueSchema: $Value,
+) =>
+  pipe(instance<Map<Infer<$Key>, Infer<$Value>>>(Map), (v) => {
+    const res: Map<Infer<$Key>, Infer<$Value>> = new Map();
 
-				for(const [k, v] of (value as Map<Infer<Key>, Infer<Value>>).entries()) {
-					res.set(
-						(keySchema(k) || k) as Infer<Key>, 
-						(valueSchema(v) || v) as Infer<Value>
-					);
-				}
+    for (const [_k, _v] of v.entries()) {
+      const key = keySchema(_k);
 
-				return res;
-			}
-		)
-	);
-};
+      if (isErr(key)) {
+        return key;
+      }
+
+      const value = valueSchema(_v);
+
+      if (isErr(value)) {
+        return value;
+      }
+
+      res.set(getOk(key), getOk(value));
+    }
+
+    return ok(res);
+  });

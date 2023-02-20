@@ -1,3 +1,3 @@
 import { instance } from "./instance";
 
-export const date = instance<Date>(Date as never);
+export const date = instance(Date);

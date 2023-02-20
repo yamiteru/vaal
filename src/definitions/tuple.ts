@@ -1,25 +1,35 @@
-import { define, validation } from "../core";
-import { InferValidationArray, Validation } from "../types";
-import { length } from "../validations/array";
+import { getOk, isErr, ok } from "elfs";
+import { pipe, filter, error, errorTuple, Pipeable } from "pipem";
+import { InferPipeableArray } from "../types";
 import { type } from "../validations/shared";
 
-export const tuple = <Schemas extends Validation[]>(...schemas: Schemas) => {
-	const typesLength = schemas.length;
+export const tuple = <$Schemas extends Pipeable[]>(...schemas: $Schemas) => {
+  const desiredLength = schemas.length;
 
-	return define<InferValidationArray<Schemas>>(
-		type("array"),
-		length(typesLength),
-		validation(
-			"TUPLE",
-			(value) => {
-				const res: InferValidationArray<Schemas> = [] as never;
+  return pipe(
+    type<InferPipeableArray<$Schemas>>("array"),
+    error(
+      filter((v) => v.length === desiredLength),
+      (value) =>
+        errorTuple("TUPLE", value, {
+          desiredLength,
+          currentLength: value.length,
+        }),
+    ),
+    (v) => {
+      const res: InferPipeableArray<$Schemas> = [] as never;
 
-				for(let i = 0; i < typesLength; ++i) {
-					res.push(schemas[i]((value as unknown[])[i]));	
-				}	
+      for (let i = 0; i < desiredLength; ++i) {
+        const value = schemas[i](v[i]);
 
-				return res;
-			}
-		)
-	);
+        if (isErr(value)) {
+          return value;
+        }
+
+        res.push(getOk(value));
+      }
+
+      return ok(res);
+    },
+  );
 };

@@ -1,11 +1,10 @@
-import { or } from "pipem";
-import { number, string } from "./definitions";
-import { maybe } from "./definitions/maybe";
+import { parse } from "./core";
+import { number } from "./definitions";
+import { optional } from "./definitions/optional";
 
-const value = maybe(or(string, number));	
+const schema = optional(number);
 
-console.log(value(1));
-console.log(value("one"));
-console.log(value(null));
-console.log(value([]));
-
+console.log(parse("wrong", schema));
+console.log(parse(undefined, schema));
+console.log(parse(null, schema));
+console.log(parse(1, schema));

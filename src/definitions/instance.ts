@@ -1,11 +1,7 @@
-import { define, predicate, validation } from "../core";
+import { filter, error, errorTuple } from "pipem";
 
-export const instance = <Type>(desiredInstance: Type) => {
-	return define<Type>(
-		validation(
-			"INSTANCE",
-			predicate((v) => v instanceof (desiredInstance as never) === false),
-			() => ({ desiredInstance })
-		)
-	);
-};
+export const instance = <$Type>(desiredInstance: { new (): $Type }) =>
+  error(
+    filter((v: $Type) => v instanceof desiredInstance === true),
+    (value) => errorTuple("INSTANCE", value, { desiredInstance }),
+  );

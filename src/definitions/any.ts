@@ -1,1 +1,3 @@
-export const any = <Type>(value: any) => value as Type;
+import { Pipeable } from "pipem";
+
+export const any = ((value: any) => value) as Pipeable;

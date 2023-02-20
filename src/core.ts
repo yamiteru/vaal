@@ -1,40 +1,34 @@
-import { pipe } from "pipem";
-import { Error, Validation } from "./types";
+import { pipe, PipeableInput } from "pipem";
+import { Either, Error } from "./types";
 
 export const noReason = () => ({});
 
-export function assert<T>(
-	value: unknown, 
-	validation: Validation<T>
-): asserts value is T {
-	validation(value as never);
+export function assert<Type>(
+  value: unknown,
+  validation: PipeableInput<Type>,
+): asserts value is Type {
+  validation(value as never);
 }
 
-export function is<T>(
-	value: unknown, 
-	validation: Validation<T>
-): value is T {
-	try {
-		validation(value as never);
-		return true;
-	} catch {
-		return false;
-	}
+export function is<Type>(
+  value: unknown,
+  validation: PipeableInput<Type>,
+): value is Type {
+  try {
+    validation(value as never);
+    return true;
+  } catch {
+    return false;
+  }
 }
 
-export async function parse<T>(
-	value: unknown,
-	validation: Validation<T>
-): Promise<[T, null] | [null, Error]> {
-	try {
-		const maybeData = await pipe(validation)((value as never));
-
-		if(maybeData === undefined) {
-			throw "Pipe returned prematurely";
-		}
-
-		return [maybeData, null];
-	} catch (e) {
-		return [null, e as Error];
-	}
+export function parse<Type>(
+  value: unknown,
+  validation: PipeableInput<Type>,
+): Either<[Type, null], [null, Error]> {
+  try {
+    return [pipe(validation)(value as never), null];
+  } catch (e) {
+    return [null, e as Error];
+  }
 }

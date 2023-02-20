@@ -1,5 +1,5 @@
-import { or } from "pipem";
-import { Validation } from "../types";
-import { none } from "./none";
+import { either, PipeableAny } from "pipem";
+import { literal } from "./literal";
 
-export const optional = <Type extends Validation>(validation: Type) => or(none, validation);
+export const optional = <Schema extends PipeableAny>(schema: Schema) =>
+  either(literal(undefined), schema);
